@@ -14,6 +14,7 @@ class Server{
         int m_socket;
         int m_port;
         std::string ip_address;
+        
         Logs Log;
 
     public:

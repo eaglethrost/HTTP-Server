@@ -5,9 +5,11 @@
 #include <string>
 
 class Logs{
+    
     public:
         Logs();
         ~Logs();
+
         void log(const std::string& message);
         void exitWithError(const std::string& message);
 };
