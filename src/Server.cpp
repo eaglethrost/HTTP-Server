@@ -34,9 +34,13 @@ Server::Server(std::string ip_address, int port)
 
 Server::~Server()
 {
+    close(m_socket);
     std::cout << "Destroyed server!!\n";
 }
 
+/*
+ *  Opens a socket in the current device and binds an IP address to it
+ */
 int Server::startServer()
 {
     m_socket = socket(AF_INET, SOCK_STREAM, 0);     /* domain, communication structure, protocol */
@@ -47,18 +51,76 @@ int Server::startServer()
         return 1;
     }
     
-    // bind socket
     if (bind(m_socket, (sockaddr*)&m_socket_address, m_socket_address_len) < 0)
     {
         Log.exitWithError("Cannot bind socket with address");
         return 1;
     }
 
-    Log.log("Opened Socket!!");
+    // TODO: Implement logger that takes in a variable to be printed
+    std::cout << "Opened socket address at IP " << m_ip_address << "\n";
     return 0;
 }
 
-void Server::closeServer()
+/*
+ * Start socket listening to incoming connections
+ */
+void Server::startListening()
 {
-    close(m_socket);
+    if (listen(m_socket, MAX_CONNECTIONS) < 0)
+    {
+        Log.exitWithError("Socket failed to listen");
+    }
+    std::cout << "\nListening on ADDRESS: "
+              << inet_ntoa(m_socket_address.sin_addr)
+              << "\nPORT: " << ntohs(m_socket_address.sin_port)
+              << "\n";
+}
+
+/*
+ * Accept a connection and create a new thread socket to deal with it
+ */
+void Server::acceptConnection()
+{
+    m_new_socket = accept(m_socket, (sockaddr *)&m_socket_address, &m_socket_address_len);
+    if (m_new_socket < 0)
+    {
+        std::cout << "\nServer failed to accept incoming connection from ADDRESS: "
+                << inet_ntoa(m_socket_address.sin_addr)
+                << "\nPORT: " << m_socket_address.sin_port
+                << "\n";
+        Log.exitWithError("Cannot accept incoming request");
+    }
+    
+    std::cout << "\nServer accepted incoming connection from ADDRESS: "
+            << inet_ntoa(m_socket_address.sin_addr)
+            << "\nPORT: " << m_socket_address.sin_port
+            << "\n";
+
+    readRequest();
+    respondRequest();
+}
+
+void Server::readRequest()
+{
+    char buffer[REQUEST_BUFFER_SIZE] = {};
+    ssize_t bytesRead = read(m_new_socket, buffer, REQUEST_BUFFER_SIZE);
+    if (bytesRead < 0)
+    {
+        Log.exitWithError("Faild to read bytes from client socket connection");
+    }
+}
+
+void Server::respondRequest()
+{
+    std::string response = "your request has been processed!!\n";
+    ssize_t bytesSent = write(m_new_socket, response.c_str(), response.size());
+    if (bytesSent == response.size())
+    {
+        Log.log("===== Client Request has been served and responsed =====\n");
+    }
+    else
+    {
+        Log.log("Error responding to client");
+    }
 }
