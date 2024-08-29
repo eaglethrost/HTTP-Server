@@ -2,10 +2,8 @@
 #define SERVER_H
 
 /*
-=========================================
-Uses m_ prefix to denote member variables
-=========================================
-*/
+ * An HTTP Server that opens a socket and listens to incoming connections
+ */
 
 #include "logger/Logs.h"
 #include "SocketAddr.h"
@@ -15,32 +13,29 @@ Uses m_ prefix to denote member variables
 #include <arpa/inet.h>
 #include <unistd.h>
 
-const int MAX_CONNECTIONS = 20;
-const int REQUEST_BUFFER_SIZE = 30000;
-
-/*
- * An HTTP Server that opens a socket and listens to incoming connections
- */
 class Server{
-    private:
-        int m_socket;                               /* current device endpoint for communication */
-        int m_new_socket;                           /* socket to handle a new connection request */
-        struct socketaddr_in m_socket_address;      /* socket's address information */
-        unsigned int m_socket_address_len;
-        int m_port;                                 /* current device port number used to communicate*/
-        std::string m_ip_address;                   /* current device ip address */
-        Logs Log;                                   /* logger object */
-
     public:
         Server();
-        Server(std::string ip_address, int port);
+        Server(std::string ipAddress, int port);
         ~Server();
 
         int startServer();                          /* opens socket */
         void startListening();                      /* starts listening to connection requests */
-        void acceptConnection();     /* accept an incoming connection and process the request */
+        void acceptConnection();                    /* accept an incoming connection and process the request */
         void readRequest();                         /* processes incoming request message */
         void respondRequest();                      /* responds back to device who requested */
+    
+    private:
+        int socket_;                                /* current device endpoint for communication */
+        int newConnSocket_;                         /* socket to handle a new connection request */
+        struct socketaddr_in socketAddress_;        /* socket's address information */
+        unsigned int socketAddressLen_;
+        int port_;                                  /* current device port number used to communicate*/
+        std::string ipAddress_;                     /* current device ip address */
+        Logs logger;                                /* logger object */
+
+        static const int MAX_CONNECTIONS = 20;
+        static const int REQUEST_BUFFER_SIZE = 30000;
 };
 
 #endif

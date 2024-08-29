@@ -4,37 +4,37 @@
 
 Server::Server()
 {
-    Log = Logs();
+    logger = Logs();
 
-    m_ip_address = "0.0.0.0";
-    m_port = 8080;
+    ipAddress_ = "0.0.0.0";
+    port_ = 8080;
 
-    m_socket_address.sin_family = AF_INET;
-    m_socket_address.sin_port = htons(m_port);
-    m_socket_address.sin_addr.s_addr = inet_addr(m_ip_address.c_str());
-    m_socket_address_len = sizeof(m_socket_address);
+    socketAddress_.sin_family = AF_INET;
+    socketAddress_.sin_port = htons(port_);
+    socketAddress_.sin_addr.s_addr = inet_addr(ipAddress_.c_str());
+    socketAddressLen_ = sizeof(socketAddress_);
 
-    Log.log("Initialized Server!!");
+    logger.log("Initialized Server!!");
 }
 
-Server::Server(std::string ip_address, int port)
+Server::Server(std::string ipAddress, int port)
 {
-    Log = Logs();
+    logger = Logs();
 
-    m_ip_address = ip_address;
-    m_port = port;
+    ipAddress_ = ipAddress;
+    port_ = port;
 
-    m_socket_address.sin_family = AF_INET;
-    m_socket_address.sin_port = htons(m_port);
-    m_socket_address.sin_addr.s_addr = inet_addr(m_ip_address.c_str());
-    m_socket_address_len = sizeof(m_socket_address);
+    socketAddress_.sin_family = AF_INET;
+    socketAddress_.sin_port = htons(port_);
+    socketAddress_.sin_addr.s_addr = inet_addr(ipAddress_.c_str());
+    socketAddressLen_ = sizeof(socketAddress_);
 
-    Log.log("Initialized Server!!");
+    logger.log("Initialized Server!!");
 }
 
 Server::~Server()
 {
-    close(m_socket);
+    close(socket_);
     std::cout << "Destroyed server!!\n";
 }
 
@@ -43,22 +43,22 @@ Server::~Server()
  */
 int Server::startServer()
 {
-    m_socket = socket(AF_INET, SOCK_STREAM, 0);     /* domain, communication structure, protocol */
-    if (m_socket < 0)
+    socket_ = socket(AF_INET, SOCK_STREAM, 0);     /* domain, communication structure, protocol */
+    if (socket_ < 0)
     {
         // cannot open socket
-        Log.exitWithError("Cannot open socket");
+        logger.exitWithError("Cannot open socket");
         return 1;
     }
     
-    if (bind(m_socket, (sockaddr*)&m_socket_address, m_socket_address_len) < 0)
+    if (bind(socket_, (sockaddr*)&socketAddress_, socketAddressLen_) < 0)
     {
-        Log.exitWithError("Cannot bind socket with address");
+        logger.exitWithError("Cannot bind socket with address");
         return 1;
     }
 
     // TODO: Implement logger that takes in a variable to be printed
-    std::cout << "Opened socket address at IP " << m_ip_address << "\n";
+    std::cout << "Opened socket address at IP " << ipAddress_ << "\n";
     return 0;
 }
 
@@ -67,13 +67,13 @@ int Server::startServer()
  */
 void Server::startListening()
 {
-    if (listen(m_socket, MAX_CONNECTIONS) < 0)
+    if (listen(socket_, MAX_CONNECTIONS) < 0)
     {
-        Log.exitWithError("Socket failed to listen");
+        logger.exitWithError("Socket failed to listen");
     }
     std::cout << "\nListening on ADDRESS: "
-              << inet_ntoa(m_socket_address.sin_addr)
-              << "\nPORT: " << ntohs(m_socket_address.sin_port)
+              << inet_ntoa(socketAddress_.sin_addr)
+              << "\nPORT: " << ntohs(socketAddress_.sin_port)
               << "\n";
 }
 
@@ -82,19 +82,19 @@ void Server::startListening()
  */
 void Server::acceptConnection()
 {
-    m_new_socket = accept(m_socket, (sockaddr *)&m_socket_address, &m_socket_address_len);
-    if (m_new_socket < 0)
+    newConnSocket_ = accept(socket_, (sockaddr *)&socketAddress_, &socketAddressLen_);
+    if (newConnSocket_ < 0)
     {
         std::cout << "\nServer failed to accept incoming connection from ADDRESS: "
-                << inet_ntoa(m_socket_address.sin_addr)
-                << "\nPORT: " << m_socket_address.sin_port
+                << inet_ntoa(socketAddress_.sin_addr)
+                << "\nPORT: " << socketAddress_.sin_port
                 << "\n";
-        Log.exitWithError("Cannot accept incoming request");
+        logger.exitWithError("Cannot accept incoming request");
     }
     
     std::cout << "\nServer accepted incoming connection from ADDRESS: "
-            << inet_ntoa(m_socket_address.sin_addr)
-            << "\nPORT: " << m_socket_address.sin_port
+            << inet_ntoa(socketAddress_.sin_addr)
+            << "\nPORT: " << socketAddress_.sin_port
             << "\n";
 
     readRequest();
@@ -104,24 +104,24 @@ void Server::acceptConnection()
 void Server::readRequest()
 {
     char buffer[REQUEST_BUFFER_SIZE] = {};
-    ssize_t bytesRead = read(m_new_socket, buffer, REQUEST_BUFFER_SIZE);
+    ssize_t bytesRead = read(newConnSocket_, buffer, REQUEST_BUFFER_SIZE);
     std::cout << buffer << "\n"; 
     if (bytesRead < 0)
     {
-        Log.exitWithError("Faild to read bytes from client socket connection");
+        logger.exitWithError("Faild to read bytes from client socket connection");
     }
 }
 
 void Server::respondRequest()
 {
     std::string response = "your request has been processed!!\n";
-    ssize_t bytesSent = write(m_new_socket, response.c_str(), response.size());
+    ssize_t bytesSent = write(newConnSocket_, response.c_str(), response.size());
     if (bytesSent == response.size())
     {
-        Log.log("===== Client Request has been served and responsed =====\n");
+        logger.log("===== Client Request has been served and responsed =====\n");
     }
     else
     {
-        Log.log("Error responding to client");
+        logger.log("Error responding to client");
     }
 }

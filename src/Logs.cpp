@@ -1,14 +1,6 @@
 #include "logger/Logs.h"
 
-Logs::Logs()
-{
-
-}
-
-Logs::~Logs()
-{
-
-}
+Logs::Logs(){}
 
 void Logs::log(const std::string& message)
 {
