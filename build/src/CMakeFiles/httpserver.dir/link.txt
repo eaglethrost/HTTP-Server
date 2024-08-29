@@ -1,2 +1,0 @@
-/Library/Developer/CommandLineTools/usr/bin/ar qc libhttpserver.a CMakeFiles/httpserver.dir/Server.cpp.o
-/Library/Developer/CommandLineTools/usr/bin/ranlib libhttpserver.a

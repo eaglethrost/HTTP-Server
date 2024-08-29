@@ -105,6 +105,7 @@ void Server::readRequest()
 {
     char buffer[REQUEST_BUFFER_SIZE] = {};
     ssize_t bytesRead = read(m_new_socket, buffer, REQUEST_BUFFER_SIZE);
+    std::cout << buffer << "\n"; 
     if (bytesRead < 0)
     {
         Log.exitWithError("Faild to read bytes from client socket connection");

@@ -39,6 +39,6 @@ int main(void)
     // START_CLOSE_SERVER_DEFAULT_TEST();
     // std::cout << "\n========================\n\n";
     // START_CLOSE_SERVER_CUSTOM_TEST("0.0.0.0",8080);
-    RESPOND_REQUEST_TEST("0.0.0.0",3000);
+    RESPOND_REQUEST_TEST("0.0.0.0",8080);
     return 0;
 }
